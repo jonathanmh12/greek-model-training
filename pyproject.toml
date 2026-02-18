@@ -1,0 +1,24 @@
+[project]
+name = "greek-model-training"
+version = "0.1.0"
+description = "Model training pipeline for Greek semantic embeddings"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "ipykernel>=7.2.0",
+    "cltk>=1.2.3",
+    "pandas>=2.0.0,<3.0.0",
+    "ruff>=0.15.1",
+    "scipy>=1.17.0",
+    "torch>=2.10.0",
+    "transformers[torch]>=5.1.0",
+    "sentence-transformers>=5.2.2",
+    "lxml>=6.0.2",
+    "datasets>=4.5.0",
+    "accelerate>=1.12.0",
+    "mlflow>=2.10.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
