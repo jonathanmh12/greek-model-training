@@ -66,7 +66,7 @@ export CORPUS_XML_GLOB="/mnt/proxmox_greek/First1KGreek/data/**/*.xml"
 export ADDITIONAL_TEXT_PATH="/mnt/proxmox_greek/corpus/combined_text_NT.txt"
 ```
 
-Optional: override whitelist at runtime:
+Optional: override whitelist at runtime to limit the authors to a certain time or place:
 
 ```bash
 DBT_PROFILES_DIR=. uv run dbt run --vars '{author_whitelist: [tlg0543, tlg0527, tlg0007]}'
