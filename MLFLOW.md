@@ -38,6 +38,7 @@ Then navigate to http://localhost:5000 in your browser.
 - Trained BERT model
 - Tokenizer
 - Model configuration
+- Consolidated local checkpoints under `models/local_checkpoints/`
 
 ## 📁 Data Storage
 
@@ -64,9 +65,10 @@ The MLFlow UI allows you to:
 Each time you run the training notebook, a new experiment run is created. Compare different configurations by modifying hyperparameters between runs.
 
 ### Custom Run Names
-The run name is set to `GreekBERT_v3_training` by default. Customize it in the notebook:
+The notebook creates a timestamped run name (for example, `GreekBERT_20260220_154500`) to avoid collisions. Customize it in the notebook:
 ```python
-with mlflow.start_run(run_name="my_custom_run_name"):
+run_name = "my_custom_run_name"
+with mlflow.start_run(run_name=run_name):
     ...
 ```
 

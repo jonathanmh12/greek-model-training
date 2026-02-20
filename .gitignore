@@ -42,16 +42,14 @@ wheels/
 # MLflow
 mlruns/
 results/
+mlflow.db
 
 # Models (large files - commit separately or use DVC)
 *.bin
 *.safetensors
 checkpoint-*/
-Greek_v1_Base/
-Greek_v2_Expanded/
-GreekBERT/
-GreekBERT_v3/
-output_GreekBERT/
+models/local_checkpoints/
+models/local_exports/
 
 # Data (optional - if you want to manage via DVC)
 # data/
@@ -59,3 +57,11 @@ output_GreekBERT/
 # Temporary
 *.tmp
 .cache/
+
+# dbt
+dbt/target/
+dbt/logs/
+data/greek_training.duckdb
+
+# data
+data/*

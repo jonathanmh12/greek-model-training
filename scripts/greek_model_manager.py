@@ -1,5 +1,6 @@
 import torch
 import os
+from pathlib import Path
 from transformers import (
     RobertaConfig, RobertaForMaskedLM, RobertaTokenizerFast, 
     DataCollatorForLanguageModeling, Trainer, TrainingArguments
@@ -46,8 +47,11 @@ class GreekModelPipeline:
         )
 
         # 3. Training Args
+        checkpoints_dir = Path("models/local_checkpoints") / self.model_name
+        checkpoints_dir.mkdir(parents=True, exist_ok=True)
+
         args = TrainingArguments(
-            output_dir=f"./output_{self.model_name}",
+            output_dir=str(checkpoints_dir),
             overwrite_output_dir=True,
             num_train_epochs=epochs,
             per_device_train_batch_size=batch_size,
@@ -63,8 +67,10 @@ class GreekModelPipeline:
         )
         
         trainer.train()
-        self.model.save_pretrained(f"./{self.model_name}_final")
-        self.tokenizer.save_pretrained(f"./{self.model_name}_final")
+        final_dir = Path("models/local_exports") / self.model_name
+        final_dir.mkdir(parents=True, exist_ok=True)
+        self.model.save_pretrained(str(final_dir))
+        self.tokenizer.save_pretrained(str(final_dir))
 
     def get_similarity(self, word1, word2):
         # Helper for semantic domain testing
