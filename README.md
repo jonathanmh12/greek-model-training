@@ -2,10 +2,11 @@
 
 Training pipeline for building Greek semantic embedding models.
 
-## Data Source
+## Data Sources
 
-The Greek text corpus used for training is sourced from the [PerseusDL/canonical-greekLit](https://github.com/PerseusDL/canonical-greekLit) repository, which provides canonical Ancient Greek literature in TEI XML format.
-I have loaded it to my home server for quick access. In this code you will see that mount point reflected as a variable in the dbt_project.yml. If you need to work on this you will need only to download their repo and then provide the path to it in that variable.
+- The Greek text corpus used for training is sourced from the [PerseusDL/canonical-greekLit](https://github.com/PerseusDL/canonical-greekLit) repository, which provides canonical Ancient Greek literature in TEI XML format.
+- I have loaded it to my home server for quick access. In this code you will see that mount point reflected as a variable in the dbt_project.yml. If you need to work on this you will need only to download their repo and then provide the path to it in that variable.
+- I have also used a cleaned NT greek text as an additional source. You will have to find that but you can use the `cleaning_the_data.ipynb` notebook to clean it. I believe I got mine from the SBLGNT.
 
 ## Overview
 
