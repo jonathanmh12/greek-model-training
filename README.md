@@ -2,6 +2,10 @@
 
 Training pipeline for building Greek semantic embedding models.
 
+## Data Source
+
+The Greek text corpus used for training is sourced from the [PerseusDL/canonical-greekLit](https://github.com/PerseusDL/canonical-greekLit) repository, which provides canonical Ancient Greek literature in TEI XML format.
+
 ## Overview
 
 This repository contains the code for training transformer-based models on Biblical Greek text. It supports:
