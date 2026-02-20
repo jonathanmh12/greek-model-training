@@ -17,7 +17,7 @@ Simply execute the training notebook as usual. MLFlow tracking is automatically 
 ### 3. View Experiment Results
 After training, launch the MLFlow UI:
 ```bash
-mlflow ui
+uv run mlflow server
 ```
 
 Then navigate to http://localhost:5000 in your browser.
