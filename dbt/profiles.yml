@@ -1,0 +1,8 @@
+greek_training_dbt:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: ../data/greek_training.duckdb
+      threads: 4
+      schema: analytics

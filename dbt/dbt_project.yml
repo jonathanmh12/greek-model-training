@@ -1,0 +1,38 @@
+name: greek_training_dbt
+version: 1.0.0
+config-version: 2
+
+profile: greek_training_dbt
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  greek_training_dbt:
+    raw:
+      +materialized: table
+    staging:
+      +materialized: table
+
+vars:
+  xml_corpus_glob: "{{ env_var('CORPUS_XML_GLOB', '/media/proxmox_share/First1KGreek/data/**/*.xml') }}"
+  additional_text_path: "{{ env_var('ADDITIONAL_TEXT_PATH', '../data/combined_text_NT.txt') }}"
+  author_whitelist:
+    - tlg0543
+    - tlg0527
+    - tlg0007
+    - tlg0557
+    - tlg0062
+    - tlg0525
+    - tlg0057
+    - tlg0551
+    - tlg0526

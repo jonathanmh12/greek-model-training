@@ -1,0 +1,62 @@
+version: 2
+
+models:
+  - name: stg_corpus_cleaned
+    description: All corpus documents cleaned into plain text before sentence splitting and whitelist filtering.
+    columns:
+      - name: row_id
+        description: Stable row id from the raw ingest table.
+        tests:
+          - not_null
+          - unique
+      - name: source_type
+        description: Origin type for the row (xml or additional).
+        tests:
+          - not_null
+      - name: source_file_name
+        description: Input filename without extension.
+        tests:
+          - not_null
+      - name: source_file_path
+        description: Full source path read by DuckDB.
+        tests:
+          - not_null
+      - name: cleaned_text
+        description: Whitespace-normalized plain text extracted from XML body content or additional text.
+        tests:
+          - not_null
+
+  - name: stg_corpus
+    description: Sentence-level corpus rows after cleaning and downstream whitelist filtering.
+    columns:
+      - name: verse_id
+        description: Stable row id generated from sentence-level ordering.
+        tests:
+          - not_null
+          - unique
+      - name: source_type
+        description: Origin type for the sentence (xml or additional).
+        tests:
+          - not_null
+      - name: author_id
+        description: First1K author id parsed from XML path; null for additional text rows.
+      - name: source_file
+        description: Source filename (without extension) that produced the sentence.
+        tests:
+          - not_null
+      - name: source_label
+        description: Human-friendly source label derived from the source filename.
+        tests:
+          - not_null
+      - name: source_file_path
+        description: Full source file path as seen by DuckDB/dbt at runtime.
+        tests:
+          - not_null
+      - name: verse_text
+        description: Cleaned Greek verse text.
+        tests:
+          - not_null
+      - name: char_count
+        description: Character length of verse_text.
+        tests:
+          - not_null
