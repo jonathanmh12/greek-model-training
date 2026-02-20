@@ -1,11 +1,13 @@
 import torch
 import os
 from pathlib import Path
+import tempfile
 from transformers import (
     RobertaConfig, RobertaForMaskedLM, RobertaTokenizerFast, 
     DataCollatorForLanguageModeling, Trainer, TrainingArguments
 )
 from datasets import load_dataset
+from clean_data import build_greek_corpus_from_dbt
 
 class GreekModelPipeline:
     def __init__(self, model_name, vocab_size=30000):
@@ -71,6 +73,18 @@ class GreekModelPipeline:
         final_dir.mkdir(parents=True, exist_ok=True)
         self.model.save_pretrained(str(final_dir))
         self.tokenizer.save_pretrained(str(final_dir))
+
+    def train_from_dbt(self, whitelist=None, epochs=10, batch_size=32, run_dbt=True):
+        sentences = build_greek_corpus_from_dbt(whitelist=whitelist, run_dbt=run_dbt)
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False, encoding="utf-8") as tmp:
+            tmp.write("\n".join(sentences))
+            temp_path = tmp.name
+
+        try:
+            self.train(corpus_path=temp_path, epochs=epochs, batch_size=batch_size)
+        finally:
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
 
     def get_similarity(self, word1, word2):
         # Helper for semantic domain testing

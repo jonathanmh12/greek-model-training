@@ -2,6 +2,11 @@ import os
 import glob
 from lxml import etree
 import re
+import json
+import subprocess
+from pathlib import Path
+
+import duckdb
 
 DEFAULT_WHITELIST = [
     "tlg0543", # Polybius
@@ -18,6 +23,65 @@ DEFAULT_WHITELIST = [
 GREEK_PUNCTUATION = re.compile(r'([.;·?])\s+')
 
 DEFAULT_ADDITIONAL_TEXT_PATH = 'data/combined_text_NT.txt'
+
+
+def _repo_root() -> Path:
+    return Path(__file__).resolve().parents[1]
+
+
+def build_greek_corpus_from_dbt(
+    whitelist=None,
+    run_dbt=True,
+    dbt_project_dir="dbt",
+    db_path="data/greek_training.duckdb",
+):
+    """
+    Returns sentence-level Greek text from the dbt model `analytics.stg_corpus`.
+
+    If `run_dbt=True`, this function first executes dbt with an override for
+    `author_whitelist`, then reads `verse_text` rows from DuckDB.
+    """
+    if whitelist is None:
+        whitelist = DEFAULT_WHITELIST
+
+    root = _repo_root()
+    dbt_dir = root / dbt_project_dir
+    warehouse_path = root / db_path
+
+    if run_dbt:
+        dbt_vars = json.dumps({"author_whitelist": whitelist})
+        env = os.environ.copy()
+        env["DBT_PROFILES_DIR"] = str(dbt_dir)
+        subprocess.run(
+            [
+                "uv",
+                "run",
+                "dbt",
+                "run",
+                "--select",
+                "stg_corpus",
+                "--vars",
+                dbt_vars,
+            ],
+            cwd=str(dbt_dir),
+            env=env,
+            check=True,
+        )
+
+    if not warehouse_path.exists():
+        raise FileNotFoundError(f"DuckDB file not found at {warehouse_path}")
+
+    with duckdb.connect(str(warehouse_path), read_only=True) as con:
+        rows = con.execute(
+            """
+            select verse_text
+            from analytics.stg_corpus
+            where verse_text is not null and trim(verse_text) <> ''
+            order by verse_id
+            """
+        ).fetchall()
+
+    return [row[0] for row in rows]
 
 def build_greek_corpus(repo_path: str = "~/Documents/codespace/projects/First1KGreek", additional_text_path=None, whitelist=None):
     """
