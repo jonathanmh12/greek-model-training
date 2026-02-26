@@ -29,14 +29,26 @@ def _repo_root() -> Path:
     return Path(__file__).resolve().parents[1]
 
 
+def _split_into_sentences(text: str):
+    sentences = []
+    chunks = GREEK_PUNCTUATION.split(text)
+    for i in range(0, len(chunks) - 1, 2):
+        sent = (chunks[i] + chunks[i + 1]).strip()
+        if len(sent) > 5:
+            sentences.append(sent)
+    return sentences
+
+
 def build_greek_corpus_from_dbt(
-    whitelist=None,
-    run_dbt=True,
-    dbt_project_dir="dbt",
-    db_path="data/greek_training.duckdb",
+    whitelist: list=None,
+    run_dbt: bool=True,
+    dbt_project_dir: str="dbt",
+    db_path: str="data/greek_training.duckdb",
+    additional_text_path: str=None,
 ):
     """
-    Returns sentence-level Greek text from the dbt model `analytics.stg_corpus`.
+    Returns sentence-level Greek text from the dbt model `analytics.stg_corpus`
+    plus supplemental text not yet present in dbt.
 
     If `run_dbt=True`, this function first executes dbt with an override for
     `author_whitelist`, then reads `verse_text` rows from DuckDB.
@@ -44,12 +56,14 @@ def build_greek_corpus_from_dbt(
     if whitelist is None:
         whitelist = DEFAULT_WHITELIST
 
+    if additional_text_path is None:
+        additional_text_path = DEFAULT_ADDITIONAL_TEXT_PATH
+
     root = _repo_root()
     dbt_dir = root / dbt_project_dir
     warehouse_path = root / db_path
 
     if run_dbt:
-        dbt_vars = json.dumps({"author_whitelist": whitelist})
         env = os.environ.copy()
         env["DBT_PROFILES_DIR"] = str(dbt_dir)
         subprocess.run(
@@ -60,8 +74,6 @@ def build_greek_corpus_from_dbt(
                 "run",
                 "--select",
                 "stg_corpus",
-                "--vars",
-                dbt_vars,
             ],
             cwd=str(dbt_dir),
             env=env,
@@ -72,18 +84,44 @@ def build_greek_corpus_from_dbt(
         raise FileNotFoundError(f"DuckDB file not found at {warehouse_path}")
 
     with duckdb.connect(str(warehouse_path), read_only=True) as con:
-        rows = con.execute(
-            """
+        if whitelist:
+            placeholders = ", ".join(["?"] * len(whitelist))
+            query = f"""
             select verse_text
             from analytics.stg_corpus
-            where verse_text is not null and trim(verse_text) <> ''
+            where
+                verse_text is not null and
+                trim(verse_text) <> '' and
+                author_id in ({placeholders})
             order by verse_id
             """
-        ).fetchall()
+            rows = con.execute(query, whitelist).fetchall()
+        else:
+            rows = con.execute(
+                """
+                select verse_text
+                from analytics.stg_corpus
+                where
+                    verse_text is not null and
+                    trim(verse_text) <> ''
+                order by verse_id
+                """
+            ).fetchall()
 
-    return [row[0] for row in rows]
+    corpus = [row[0] for row in rows]
 
-def build_greek_corpus(repo_path: str = "~/Documents/codespace/projects/First1KGreek", additional_text_path=None, whitelist=None):
+    additional_path = Path(additional_text_path)
+    if not additional_path.is_absolute():
+        additional_path = root / additional_path
+
+    if additional_path.exists():
+        supplemental_text = additional_path.read_text(encoding="utf-8")
+        corpus.extend(_split_into_sentences(supplemental_text))
+        print(f"Added additional text from {additional_path}")
+
+    return corpus
+
+def build_greek_corpus(repo_path: str = "~/Documents/codespace/projects/First1KGreek", additional_text_path: str=None, whitelist: list=None):
     """
     Parses First1KGreek XML files based on a whitelist, merges with 
     additional text, and returns a list of cleaned sentences.
@@ -131,13 +169,8 @@ def build_greek_corpus(repo_path: str = "~/Documents/codespace/projects/First1KG
     # 3. Process into sentences
     sentences = []
     for text in all_text:
-        chunks = GREEK_PUNCTUATION.split(text)
-        # Re-join punctuation with the preceding chunk
-        for i in range(0, len(chunks)-1, 2):
-            sent = (chunks[i] + chunks[i+1]).strip()
-            if len(sent) > 5:
-                sentences.append(sent)
-                
+        sentences.extend(_split_into_sentences(text))
+
     return sentences
 
 if __name__ == "__main__":

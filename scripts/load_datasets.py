@@ -1,13 +1,7 @@
 from datasets import Dataset, DatasetDict, load_dataset
-from transformers import PreTrainedTokenizerFast
 
 def load_datasets(raw_tokenizer, corpus_path: str | None = None, sentences: list[str] | None = None):
-    # 1. Setup the wrapper for later use (Trainer needs it)
-    fast_tokenizer = PreTrainedTokenizerFast(tokenizer_object=raw_tokenizer)
-    fast_tokenizer.pad_token = "<pad>"
-    fast_tokenizer.mask_token = "<mask>"
-
-    # 2. Load the dataset
+    # 1. Load the dataset
     if sentences is not None:
         raw_dataset = DatasetDict({"train": Dataset.from_dict({"text": sentences})})
     elif corpus_path is not None:
@@ -15,7 +9,7 @@ def load_datasets(raw_tokenizer, corpus_path: str | None = None, sentences: list
     else:
         raise ValueError("Provide either `corpus_path` or `sentences`.")
 
-    # 3. Use the raw_tokenizer's .encode_batch method
+    # 2. Use the raw_tokenizer's .encode_batch method
     # This bypasses the buggy 'direction' argument entirely
     def tokenize_function(examples):
         # We manually truncate and pad here
