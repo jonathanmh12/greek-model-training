@@ -1,7 +1,5 @@
 {{ config(materialized='table') }}
 
-{% set author_whitelist = var('author_whitelist') %}
-
 with sentence_candidates as (
     select
         source_type,
@@ -34,14 +32,6 @@ filtered as (
         verse_text
     from trimmed
     where length(verse_text) > 5
-      and (
-          source_type = 'additional'
-          or author_id in (
-            {% for author_id in author_whitelist %}
-                '{{ author_id }}'{% if not loop.last %}, {% endif %}
-            {% endfor %}
-          )
-      )
 )
 
 select
