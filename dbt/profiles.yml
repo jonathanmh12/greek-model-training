@@ -6,3 +6,4 @@ greek_training_dbt:
       path: ../data/greek_training.duckdb
       threads: 4
       schema: analytics
+      extensions: [parquet]

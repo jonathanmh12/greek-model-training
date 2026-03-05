@@ -60,3 +60,96 @@ models:
         description: Character length of verse_text.
         tests:
           - not_null
+  - name: hmcgovern_normalized
+    description: >
+      Word-level rows from the hmcgovern original-language-bibles-greek dataset,
+      with parsed reference components and normalized book names.
+    columns:
+      - name: reference
+        description: Original word-level reference string from the parquet source (e.g. "mat.1.1.1").
+        tests:
+          - not_null
+      - name: text
+        description: Ancient Greek word token.
+        tests:
+          - not_null
+      - name: translation
+        description: English translation of the Greek word.
+        tests:
+          - not_null
+      - name: book_raw
+        description: Three-letter book abbreviation extracted from the reference (e.g. "mat").
+      - name: chapter
+        description: Chapter number extracted from the reference.
+      - name: verse
+        description: Verse number extracted from the reference.
+      - name: full_book_name
+        description: Full English book name derived from the abbreviation (e.g. "matthew").
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - matthew
+                - mark
+                - luke
+                - john
+                - acts
+                - romans
+                - 1 corinthians
+                - 2 corinthians
+                - galatians
+                - ephesians
+                - philippians
+                - colossians
+                - 1 thessalonians
+                - 2 thessalonians
+                - 1 timothy
+                - 2 timothy
+                - titus
+                - philemon
+                - hebrews
+                - james
+                - 1 peter
+                - 2 peter
+                - 1 john
+                - 2 john
+                - 3 john
+                - jude
+                - revelation
+                - nan
+      - name: normalized_ref
+        description: >
+          Human-readable verse reference in "book chapter:verse" format (e.g. "matthew 1:1").
+          Not unique — multiple word-level rows share the same verse reference.
+        tests:
+          - not_null
+      - name: bcv
+        description: >
+          Compact book.chapter.verse key (e.g. "mat.1.1").
+          Not unique at this grain — one row per word.
+        tests:
+          - not_null
+
+  - name: verse_df
+    description: >
+      Verse-level aggregation of the hmcgovern word-level data.
+      Greek tokens and English translations are concatenated in word order per verse.
+    columns:
+      - name: verse_ref
+        description: Compact book.chapter.verse key (e.g. "mat.1.1"). One row per verse.
+        tests:
+          - not_null
+          - unique
+      - name: normalized_ref
+        description: Human-readable verse reference (e.g. "matthew 1:1").
+        tests:
+          - not_null
+          - unique
+      - name: text
+        description: Full Ancient Greek verse text, words concatenated in canonical order.
+        tests:
+          - not_null
+      - name: translation
+        description: Full English verse translation, words concatenated in canonical order.
+        tests:
+          - not_null
