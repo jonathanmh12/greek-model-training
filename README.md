@@ -1,6 +1,7 @@
 # Greek Model Training
 
 Training pipeline for building Greek semantic embedding models.
+Referenced white paper: https://ar5iv.labs.arxiv.org/html/2308.13116
 
 ## Data Sources
 
